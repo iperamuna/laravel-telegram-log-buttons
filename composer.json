@@ -22,10 +22,10 @@
             "email": "iperamuna@gmail.com"
         }
     ],
-    "homepage": "https://github.com/iperamuna/laravel-telegram-log-buttons",
+    "homepage": "https://repo6.github.com/iperamuna/laravel-telegram-log-buttons",
     "support": {
-        "issues": "https://github.com/iperamuna/laravel-telegram-log-buttons/issues",
-        "source": "https://github.com/iperamuna/laravel-telegram-log-buttons"
+        "issues": "https://repo6.github.com/iperamuna/laravel-telegram-log-buttons/issues",
+        "source": "https://repo6.github.com/iperamuna/laravel-telegram-log-buttons"
     },
     "require": {
         "php": ">=8.2",
