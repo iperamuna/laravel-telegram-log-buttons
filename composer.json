@@ -2,6 +2,19 @@
     "name": "iperamuna/laravel-telegram-log-buttons",
     "description": "Laravel logging helper for sending Telegram log messages with inline buttons via Monolog, with optional Redis buffer, batch sender, analytics events, easy callback registration, webhook/chat-id helpers, a callback generator with Laravel Prompts, health check, and Pest tests.",
     "type": "library",
+    "keywords": [
+        "laravel",
+        "telegram",
+        "logging",
+        "monolog",
+        "telegram-bot",
+        "notifications",
+        "alerts",
+        "callbacks",
+        "webhooks",
+        "redis",
+        "buffered-logging"
+    ],
     "license": "MIT",
     "authors": [
         {
@@ -9,6 +22,11 @@
             "email": "iperamuna@gmail.com"
         }
     ],
+    "homepage": "https://github.com/iperamuna/laravel-telegram-log-buttons",
+    "support": {
+        "issues": "https://github.com/iperamuna/laravel-telegram-log-buttons/issues",
+        "source": "https://github.com/iperamuna/laravel-telegram-log-buttons"
+    },
     "require": {
         "php": ">=8.2",
         "illuminate/support": "^11.0|^12.0",
