@@ -36,7 +36,8 @@ This command will:
 4. ✅ Auto-detect chat ID from recent updates
 5. ✅ Set up the callback webhook automatically
 6. ✅ Configure health check endpoint (optional)
-7. ✅ Update your `.env` file with all necessary values
+7. ✅ Select logging mode (instant/buffered)
+8. ✅ Update your `.env` file with all necessary values
 
 ### Manual Setup
 
@@ -82,6 +83,108 @@ Add the Telegram log channel to `config/logging.php`:
     ],
 ],
 ```
+
+---
+
+## Usage
+
+### Telegram Log Buttons
+
+This package extends Laravel's logging system to send messages with inline buttons to Telegram. You can add buttons using three convenient methods:
+
+#### Method 1: Using `buttons()` Macro (Fluent Builder)
+
+The `buttons()` macro returns a `TelegramButtonBuilder` instance for fluent button creation:
+
+```php
+use Illuminate\Support\Facades\Log;
+
+Log::channel('telegram')
+    ->buttons()
+    ->url('View Dashboard', 'https://example.com/dashboard')
+    ->callback('Approve', 'approve:123')
+    ->newRow()
+    ->callback('Reject', 'reject:123')
+    ->info('New user registration requires approval');
+```
+
+**Available methods:**
+- `url($text, $url)` - Add a URL button
+- `callback($text, $callbackData)` - Add a callback button
+- `newRow()` - Start a new row of buttons
+- `withContext($context)` - Add extra context data
+- `info($message, $context = [])` - Send as info level
+- `warning($message, $context = [])` - Send as warning level
+- `error($message, $context = [])` - Send as error level
+- `critical($message, $context = [])` - Send as critical level
+- `send($message, $context = [], $level = 'info')` - Send with custom level
+
+**Example with multiple rows:**
+
+```php
+Log::channel('telegram')
+    ->buttons()
+    ->url('View Order', 'https://example.com/orders/123')
+    ->callback('Approve', 'order:approve:123')
+    ->callback('Reject', 'order:reject:123')
+    ->newRow()
+    ->callback('Contact Customer', 'contact:customer:456')
+    ->warning('Order #123 requires manual review');
+```
+
+#### Method 2: Using `addButton()` Macro (Quick Single Button)
+
+Add a single URL button quickly:
+
+```php
+Log::channel('telegram')
+    ->addButton('View Details', 'https://example.com/details')
+    ->info('Payment received for order #123');
+```
+
+#### Method 3: Using `addButtons()` Macro (Multiple Buttons)
+
+Add multiple buttons at once (each button goes on its own row):
+
+```php
+Log::channel('telegram')
+    ->addButtons([
+        ['text' => 'View', 'url' => 'https://example.com/view'],
+        ['text' => 'Edit', 'callback_data' => 'edit:123'],
+        ['text' => 'Delete', 'callback_data' => 'delete:123'],
+    ])
+    ->error('Critical error detected in order processing');
+```
+
+#### Using with Logger Instances
+
+You can also use these macros with logger instances directly:
+
+```php
+use Iperamuna\TelegramLog\Logging\MacroableLogger;
+
+$logger = new MacroableLogger('telegram');
+$logger->pushHandler(new \Iperamuna\TelegramLog\Logging\TelegramButtonHandler());
+
+$logger->buttons()
+    ->callback('Retry', 'retry:task:456')
+    ->error('Task execution failed');
+```
+
+#### Button Types
+
+**URL Buttons:**
+```php
+->url('Open Website', 'https://example.com')
+```
+
+**Callback Buttons:**
+```php
+->callback('Approve', 'approve:123')
+->callback('Reject', 'reject:123')
+```
+
+Callback buttons trigger webhook callbacks that can be handled by callback handlers (see Callbacks section below).
 
 ---
 
@@ -188,115 +291,17 @@ Templates receive the following variables:
 
 ---
 
-## Telegram Log Buttons
+## Callbacks
 
-This package extends Laravel's logging system to send messages with inline buttons to Telegram. You can add buttons using three convenient methods:
+### Callback Generator
 
-### Method 1: Using `buttons()` Macro (Fluent Builder)
-
-The `buttons()` macro returns a `TelegramButtonBuilder` instance for fluent button creation:
-
-```php
-use Illuminate\Support\Facades\Log;
-
-Log::channel('telegram')
-    ->buttons()
-    ->url('View Dashboard', 'https://example.com/dashboard')
-    ->callback('Approve', 'approve:123')
-    ->newRow()
-    ->callback('Reject', 'reject:123')
-    ->info('New user registration requires approval');
-```
-
-**Available methods:**
-- `url($text, $url)` - Add a URL button
-- `callback($text, $callbackData)` - Add a callback button
-- `newRow()` - Start a new row of buttons
-- `withContext($context)` - Add extra context data
-- `info($message, $context = [])` - Send as info level
-- `warning($message, $context = [])` - Send as warning level
-- `error($message, $context = [])` - Send as error level
-- `critical($message, $context = [])` - Send as critical level
-- `send($message, $context = [], $level = 'info')` - Send with custom level
-
-**Example with multiple rows:**
-
-```php
-Log::channel('telegram')
-    ->buttons()
-    ->url('View Order', 'https://example.com/orders/123')
-    ->callback('Approve', 'order:approve:123')
-    ->callback('Reject', 'order:reject:123')
-    ->newRow()
-    ->callback('Contact Customer', 'contact:customer:456')
-    ->warning('Order #123 requires manual review');
-```
-
-### Method 2: Using `addButton()` Macro (Quick Single Button)
-
-Add a single URL button quickly:
-
-```php
-Log::channel('telegram')
-    ->addButton('View Details', 'https://example.com/details')
-    ->info('Payment received for order #123');
-```
-
-### Method 3: Using `addButtons()` Macro (Multiple Buttons)
-
-Add multiple buttons at once (each button goes on its own row):
-
-```php
-Log::channel('telegram')
-    ->addButtons([
-        ['text' => 'View', 'url' => 'https://example.com/view'],
-        ['text' => 'Edit', 'callback_data' => 'edit:123'],
-        ['text' => 'Delete', 'callback_data' => 'delete:123'],
-    ])
-    ->error('Critical error detected in order processing');
-```
-
-### Using with Logger Instances
-
-You can also use these macros with logger instances directly:
-
-```php
-use Iperamuna\TelegramLog\Logging\MacroableLogger;
-
-$logger = new MacroableLogger('telegram');
-$logger->pushHandler(new \Iperamuna\TelegramLog\Logging\TelegramButtonHandler());
-
-$logger->buttons()
-    ->callback('Retry', 'retry:task:456')
-    ->error('Task execution failed');
-```
-
-### Button Types
-
-**URL Buttons:**
-```php
-->url('Open Website', 'https://example.com')
-```
-
-**Callback Buttons:**
-```php
-->callback('Approve', 'approve:123')
-->callback('Reject', 'reject:123')
-```
-
-Callback buttons trigger webhook callbacks that can be handled by callback handlers (see Callback section below).
-
----
-
-## Callback Generator with Laravel Prompts
-
-Command:
+Generate callback handler classes using Laravel Prompts:
 
 ```bash
 php artisan telegram-log:make-callback BanUser --action=ban_user
 ```
 
-- `name` is optional → if omitted, you’ll be prompted:
+- `name` is optional → if omitted, you'll be prompted:
   - **Callback class base name** (e.g. `BanUser`)
 - `--action` is optional → if omitted, Prompts will:
   - Suggest `snake_case(name)` (e.g. `ban_user`)
@@ -341,11 +346,9 @@ Because it uses **Laravel Prompts**:
 - If you fully specify arguments & options, it runs non-interactive.
 - If you omit them, you get a nice interactive flow.
 
----
+### List Registered Callbacks
 
-## List All Registered Callbacks
-
-New command:
+View all registered callback handlers:
 
 ```bash
 php artisan telegram-log:list-callbacks
@@ -361,11 +364,7 @@ Outputs a table:
 +----------+---------------------------------------------+--------------+
 ```
 
-So you can quickly inspect what's wired.
-
----
-
-## Callback Registry & Facade
+### Callback Registry & Facade
 
 You can programmatically register callback handlers using the `TelegramCallbacks` facade:
 
@@ -392,9 +391,70 @@ $allHandlers = TelegramCallbacks::all();
 
 ---
 
+## Commands
+
+### Interactive Setup
+
+```bash
+php artisan telegram-log:install
+```
+
+Interactive wizard that guides you through:
+- Bot token setup and verification
+- Chat ID detection (with webhook handling)
+- Webhook configuration
+- Health check setup
+- Mode selection (instant/buffered)
+- `.env` file updates
+
+### Callback Management
+
+```bash
+# Generate a new callback handler
+php artisan telegram-log:make-callback BanUser --action=ban_user
+
+# List all registered callbacks
+php artisan telegram-log:list-callbacks
+```
+
+### Webhook Management
+
+```bash
+# Set webhook (interactive)
+php artisan telegram-log:set-webhook
+
+# Set webhook with URL
+php artisan telegram-log:set-webhook --url="https://your-app.com/telegram/callback"
+
+# Delete webhook
+php artisan telegram-log:set-webhook --delete
+```
+
+### Chat ID Discovery
+
+```bash
+# Discover chat IDs via getUpdates (interactive)
+php artisan telegram-log:get-chat-id
+
+# With options
+php artisan telegram-log:get-chat-id --limit=20 --raw
+```
+
+### Buffered Log Flushing
+
+```bash
+# Flush buffered logs once
+php artisan telegram-log:flush
+
+# Flush in a loop (for daemon/worker)
+php artisan telegram-log:flush --loop
+```
+
+---
+
 ## Health Check Route
 
-In `config/telegram-log.php`:
+Enable the health check endpoint in `config/telegram-log.php`:
 
 ```php
 'health' => [
@@ -441,25 +501,6 @@ X-Telegram-Log-Health-Secret: <secret>
 ```
 
 So you can put this behind a probe or internal monitoring.
-
----
-
-## Other Commands (unchanged)
-
-```bash
-# Webhook management
-php artisan telegram-log:set-webhook
-php artisan telegram-log:set-webhook --url="https://..." 
-php artisan telegram-log:set-webhook --delete
-
-# Discover chat IDs via getUpdates
-php artisan telegram-log:get-chat-id
-php artisan telegram-log:get-chat-id --limit=20 --raw
-
-# Buffered log flushing
-php artisan telegram-log:flush
-php artisan telegram-log:flush --loop
-```
 
 ---
 
